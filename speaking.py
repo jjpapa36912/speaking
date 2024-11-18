@@ -4,9 +4,8 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+
 @app.route('/')
-def home():
-    return "<h1>Welcome to My Python Web App</h1>"
 def recognize_speech_from_microphone():
     # Recognizer와 Microphone 객체 초기화
     recognizer = sr.Recognizer()
@@ -37,5 +36,9 @@ def recognize_speech_from_microphone():
                 print("Sorry, I could not understand the audio.")  # 음성을 인식하지 못함
             except sr.RequestError as e:
                 print(f"Could not request results; {e}")  # Google API 요청 오류 처리
-recognize_speech_from_microphone()
+# recognize_speech_from_microphone()
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
       
