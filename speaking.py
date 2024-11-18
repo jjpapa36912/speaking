@@ -42,7 +42,7 @@ def recognize_speech_from_microphone():
         return jsonify({"error": f"Could not request results; {e}"}), 500  # API 요청 오류 처리
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=10000)
 
 # import speech_recognition as sr
 # import pyperclip
