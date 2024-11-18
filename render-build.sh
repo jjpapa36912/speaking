@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+# pip 업데이트
+python -m pip install --upgrade pip
 # Update package manager
 apt-get update -y
 
