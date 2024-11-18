@@ -1,4 +1,5 @@
 import speech_recognition as sr
+import pyperclip
 from flask import Flask, jsonify
 
 app = Flask(__name__)
@@ -20,7 +21,10 @@ def recognize_speech_from_microphone():
             text = recognizer.recognize_google(audio, language="en-US")
             print(f"You said: {text}")  # 출력
 
-            return jsonify({"speech": text})
+            # 텍스트를 클립보드에 복사
+            pyperclip.copy(text)
+
+            return jsonify({"speech": text, "clipboard": "Text copied to clipboard"})
 
         except sr.WaitTimeoutError:
             print("Listening timed out, no speech detected.")  # 음성이 일정 시간 내에 들어오지 않음
@@ -34,6 +38,7 @@ def recognize_speech_from_microphone():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=10000)
+
 
 # import speech_recognition as sr
 # import pyperclip
