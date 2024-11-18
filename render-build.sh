@@ -2,7 +2,8 @@
 
 # pip 업데이트
 python -m pip install --upgrade pip
-pip install pipwin
+pip3 install pipwin
+pip3 install pyaudio
 # Update package manager
 apt-get update -y
 
