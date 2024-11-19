@@ -24,8 +24,15 @@ cd portaudio
 make
 make install
 
+# 환경 변수 설정
+export CFLAGS="-I$HOME/.local/include"
+export LDFLAGS="-L$HOME/.local/lib"
+export LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
+
 # PyAudio 설치
-pip install --no-binary :all: --global-option="build_ext" --global-option="-I$HOME/.local/include" --global-option="-L$HOME/.local/lib" pyaudio
+pip install --no-binary :all: pyaudio
+# # PyAudio 설치
+# pip install --no-binary :all: --global-option="build_ext" --global-option="-I$HOME/.local/include" --global-option="-L$HOME/.local/lib" pyaudio
 
 
 # sudo apt-get install -y portaudio19-dev
