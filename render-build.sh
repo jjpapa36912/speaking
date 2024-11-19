@@ -6,7 +6,7 @@ python -m pip install --upgrade pip
 pip install --upgrade pip setuptools wheel
 
 
-
+export START_DIR=$(pwd)
 # Update package manager
 apt-get update -y
 # apt-get install portaudio19-dev python3-pyaudio
@@ -46,4 +46,5 @@ pip install --no-binary :all: pyaudio
 
 
 # Run pip installation
+cd $START_DIR 
 pip install -r requirements.txt
