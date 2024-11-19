@@ -1,83 +1,78 @@
 import speech_recognition as sr
 import pyperclip
-import sounddevice as sd
 import numpy as np
 import io
 import wave
 from flask import Flask, jsonify
+import soundfile as sf
+import whisper
 
 app = Flask(__name__)
-
-
-# 음성 데이터를 sounddevice를 사용하여 캡처
-def listen_with_sounddevice(duration=10, fs=16000):
-    # 음성을 저장할 numpy 배열
-    audio_data = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='int16')
-    sd.wait()  # 음성 녹음이 끝날 때까지 대기
-    return audio_data
+# Whisper 모델 로드
+model = whisper.load_model("base")
 
 @app.route('/')
 def recognize_speech_from_microphone():
-    # Recognizer와 Microphone 객체 초기화
     recognizer = sr.Recognizer()
-    # microphone = sr.Microphone()
-     # 마이크 객체 초기화
-    # `device_index`는 기본 마이크를 사용할 수 있도록 설정
-    # microphone = sr.Microphone(device_index=None)
-    audio_data = listen_with_sounddevice()
-    with io.BytesIO() as audio_io:
-        with wave.open(audio_io, 'wb') as wf:
-            wf.setnchannels(1)
-            wf.setsampwidth(2)  # 16-bit samples
-            wf.setframerate(16000)
-            wf.writeframes(audio_data.tobytes())
-        audio_io.seek(0)
-        audio_file = sr.AudioFile(audio_io)
+    
+    # 마이크로폰 입력을 캡처한 후 raw 데이터를 파일로 저장
+    with sr.Microphone() as source:
+        print("Listening...")
+        recognizer.adjust_for_ambient_noise(source)
         
         try:
-            # 음성 파일을 인식기로 전달
-            with audio_file as source:
-                audio = recognizer.record(source)  # 음성 데이터 읽기
+            audio = recognizer.listen(source, timeout=10, phrase_time_limit=10)
+            
+            # 'audio.frame_data'는 numpy 배열로 음성 데이터를 제공
+            audio_data = np.frombuffer(audio.frame_data, dtype=np.int16)
+            
+            # 음성을 .wav 파일로 변환
+            with io.BytesIO() as audio_io:
+                sf.write(audio_io, audio_data, 16000, subtype='PCM_16')
+                audio_io.seek(0)
 
-            # Google API로 음성 인식
-            text = recognizer.recognize_google(audio, language="en-US")
-            print(f"You said: {text}")
-            pyperclip.copy(text)  # 클립보드에 텍스트 복사
-            return jsonify({"speech": text, "clipboard": "Text copied to clipboard"})
+                # Whisper 모델을 사용하여 음성 인식
+                result = model.transcribe(audio_io)
+                text = result['text']
+                
+                print(f"You said: {text}")
+                pyperclip.copy(text)  # 클립보드에 복사
+
+                return jsonify({"speech": text, "clipboard": "Text copied to clipboard"})
+# @app.route('/')
+# def recognize_speech_from_microphone():
+#     # Recognizer와 Microphone 객체 초기화
+#     recognizer = sr.Recognizer()
+#     # microphone = sr.Microphone()
+#      # 마이크 객체 초기화
+#     # `device_index`는 기본 마이크를 사용할 수 있도록 설정
+#     microphone = sr.Microphone(device_index=None)
+    
+#     with microphone as source:
+#         print("Listening...")
+#         recognizer.adjust_for_ambient_noise(source)  # 주변 소음에 적응
+#         try:
+#             # 음성을 인식하는 최대 시간 설정 (예: 10초)
+#             audio = recognizer.listen(source, timeout=10, phrase_time_limit=10)
+
+#             # Google Speech Recognition을 사용하여 음성을 텍스트로 변환
+#             text = recognizer.recognize_google(audio, language="en-US")
+#             print(f"You said: {text}")  # 출력
+
+#             # 텍스트를 클립보드에 복사
+#             pyperclip.copy(text)
+
+#             return jsonify({"speech": text, "clipboard": "Text copied to clipboard"})
+
         except sr.WaitTimeoutError:
-            print("Listening timed out, no speech detected.")
+            print("Listening timed out, no speech detected.")  # 음성이 일정 시간 내에 들어오지 않음
             return jsonify({"error": "Timeout, no speech detected"})
         except sr.UnknownValueError:
-            print("Sorry, I could not understand the audio.")
+            print("Sorry, I could not understand the audio.")  # 음성을 인식하지 못함
             return jsonify({"error": "Could not understand the audio"})
         except sr.RequestError as e:
-            print(f"Could not request results; {e}")
+            print(f"Could not request results; {e}")  # Google API 요청 오류 처리
             return jsonify({"error": f"Request error: {e}"})
-    # with microphone as source:
-    #     print("Listening...")
-    #     recognizer.adjust_for_ambient_noise(source)  # 주변 소음에 적응
-    #     try:
-    #         # 음성을 인식하는 최대 시간 설정 (예: 10초)
-    #         audio = recognizer.listen(source, timeout=10, phrase_time_limit=10)
-
-    #         # Google Speech Recognition을 사용하여 음성을 텍스트로 변환
-    #         text = recognizer.recognize_google(audio, language="en-US")
-    #         print(f"You said: {text}")  # 출력
-
-    #         # 텍스트를 클립보드에 복사
-    #         pyperclip.copy(text)
-
-    #         return jsonify({"speech": text, "clipboard": "Text copied to clipboard"})
-
-    #     except sr.WaitTimeoutError:
-    #         print("Listening timed out, no speech detected.")  # 음성이 일정 시간 내에 들어오지 않음
-    #         return jsonify({"error": "Timeout, no speech detected"})
-    #     except sr.UnknownValueError:
-    #         print("Sorry, I could not understand the audio.")  # 음성을 인식하지 못함
-    #         return jsonify({"error": "Could not understand the audio"})
-    #     except sr.RequestError as e:
-    #         print(f"Could not request results; {e}")  # Google API 요청 오류 처리
-    #         return jsonify({"error": f"Request error: {e}"})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=10000)
