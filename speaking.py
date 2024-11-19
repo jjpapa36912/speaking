@@ -1,68 +1,33 @@
 import speech_recognition as sr
 import pyperclip
-import numpy as np
-import io
-import wave
 from flask import Flask, jsonify
-import soundfile as sf
-import whisper
 
 app = Flask(__name__)
-# Whisper 모델 로드
-model = whisper.load_model("base")
 
 @app.route('/')
 def recognize_speech_from_microphone():
+    # Recognizer와 Microphone 객체 초기화
     recognizer = sr.Recognizer()
+    # microphone = sr.Microphone()
+     # 마이크 객체 초기화
+    # `device_index`는 기본 마이크를 사용할 수 있도록 설정
+    microphone = sr.Microphone(device_index=None)
     
-    # 마이크로폰 입력을 캡처한 후 raw 데이터를 파일로 저장
-    with sr.Microphone() as source:
+    with microphone as source:
         print("Listening...")
-        recognizer.adjust_for_ambient_noise(source)
-        
+        recognizer.adjust_for_ambient_noise(source)  # 주변 소음에 적응
         try:
+            # 음성을 인식하는 최대 시간 설정 (예: 10초)
             audio = recognizer.listen(source, timeout=10, phrase_time_limit=10)
-            
-            # 'audio.frame_data'는 numpy 배열로 음성 데이터를 제공
-            audio_data = np.frombuffer(audio.frame_data, dtype=np.int16)
-            
-            # 음성을 .wav 파일로 변환
-            with io.BytesIO() as audio_io:
-                sf.write(audio_io, audio_data, 16000, subtype='PCM_16')
-                audio_io.seek(0)
 
-                # Whisper 모델을 사용하여 음성 인식
-                result = model.transcribe(audio_io)
-                text = result['text']
-                
-                print(f"You said: {text}")
-                pyperclip.copy(text)  # 클립보드에 복사
+            # Google Speech Recognition을 사용하여 음성을 텍스트로 변환
+            text = recognizer.recognize_google(audio, language="en-US")
+            print(f"You said: {text}")  # 출력
 
-                return jsonify({"speech": text, "clipboard": "Text copied to clipboard"})
-# @app.route('/')
-# def recognize_speech_from_microphone():
-#     # Recognizer와 Microphone 객체 초기화
-#     recognizer = sr.Recognizer()
-#     # microphone = sr.Microphone()
-#      # 마이크 객체 초기화
-#     # `device_index`는 기본 마이크를 사용할 수 있도록 설정
-#     microphone = sr.Microphone(device_index=None)
-    
-#     with microphone as source:
-#         print("Listening...")
-#         recognizer.adjust_for_ambient_noise(source)  # 주변 소음에 적응
-#         try:
-#             # 음성을 인식하는 최대 시간 설정 (예: 10초)
-#             audio = recognizer.listen(source, timeout=10, phrase_time_limit=10)
+            # 텍스트를 클립보드에 복사
+            pyperclip.copy(text)
 
-#             # Google Speech Recognition을 사용하여 음성을 텍스트로 변환
-#             text = recognizer.recognize_google(audio, language="en-US")
-#             print(f"You said: {text}")  # 출력
-
-#             # 텍스트를 클립보드에 복사
-#             pyperclip.copy(text)
-
-#             return jsonify({"speech": text, "clipboard": "Text copied to clipboard"})
+            return jsonify({"speech": text, "clipboard": "Text copied to clipboard"})
 
         except sr.WaitTimeoutError:
             print("Listening timed out, no speech detected.")  # 음성이 일정 시간 내에 들어오지 않음
