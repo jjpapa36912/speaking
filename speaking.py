@@ -3,12 +3,16 @@ import pyperclip
 from flask import Flask, jsonify
 
 app = Flask(__name__)
-
+# 사용할 수 있도록 sounddevice를 활성화
+sr.Microphone.list_microphone_names = sr.Microphone.list_microphones
 @app.route('/')
 def recognize_speech_from_microphone():
     # Recognizer와 Microphone 객체 초기화
     recognizer = sr.Recognizer()
-    microphone = sr.Microphone()
+    # microphone = sr.Microphone()
+     # 마이크 객체 초기화
+    # `device_index`는 기본 마이크를 사용할 수 있도록 설정
+    microphone = sr.Microphone(device_index=None)
 
     with microphone as source:
         print("Listening...")
