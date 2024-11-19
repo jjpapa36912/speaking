@@ -7,6 +7,7 @@ python -m pip install --upgrade pip
 apt-get update -y
 
 apt-get install -y portaudio19-dev
+pip install sounddevice
 pip3 install pipwin
 # pip3 install pyaudio
 
