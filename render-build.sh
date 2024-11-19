@@ -2,11 +2,14 @@
 
 # pip 업데이트
 python -m pip install --upgrade pip
+pip install pyportaudio
+pip install pyaudio
+
 
 # Update package manager
-apt-get update -y
-apt-get install portaudio19-dev  # portaudio 개발 파일 설치
-apt-get install python3-pyaudio  # PyAudio 설치
+# apt-get update -y
+# apt-get install portaudio19-dev  # portaudio 개발 파일 설치
+# apt-get install python3-pyaudio  # PyAudio 설치
 
 
 # sudo apt-get install -y portaudio19-dev
