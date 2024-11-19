@@ -3,6 +3,7 @@
 # pip 업데이트
 python -m pip install --upgrade pip
 # pip install portaudio
+pip install --upgrade pip setuptools wheel
 
 
 
