@@ -8,11 +8,12 @@ python -m pip install --upgrade pip
 
 # Update package manager
 apt-get update -y
-apt-get install portaudio19-dev python-all-dev
+# apt-get install portaudio19-dev python-all-dev
+apt-get install portaudio19-dev
 # apt-get install portaudio19-dev  # portaudio 개발 파일 설치
 # apt-get install python3-pyaudio  # PyAudio 설치
 # pip install python3-pyaudio
-pip install portaudio
+pip3 install pyaudio
 
 
 # sudo apt-get install -y portaudio19-dev
